@@ -1,3 +1,5 @@
+import math
+
 class Solution: 
     def main(self,filename):
         output=0
@@ -39,7 +41,9 @@ class Solution:
             print(''.join(CRT[i:i+40]))
 
     def draw(self,sprite_pos,current_CRT,cycle):
-        if sprite_pos <= cycle <= sprite_pos + 3:
+        row = math.floor(cycle/40)
+        index = cycle - 40 * row
+        if sprite_pos <= index <= sprite_pos + 2:
             current_CRT[cycle-1] = "#"
         else:
             current_CRT[cycle-1] = "."
@@ -54,31 +58,21 @@ class Solution:
 
             lines = f.read().splitlines()
             for line in lines:
+                print(line,cycle,sprite_pos)
                 if line.strip() == "noop":
                     cycle+=1
-
-                    print('A')
-                    self.print_CRT(CRT)
-
                     CRT = self.draw(sprite_pos,CRT,cycle)
                 else:
                     x = int(line.strip().split(" ")[1])
                     
                     cycle += 1
-                    print('B')
-                    self.print_CRT(CRT)
                     CRT = self.draw(sprite_pos,CRT,cycle)
-
 
                     cycle += 1
-                    print('C')
-                    self.print_CRT(CRT)
                     CRT = self.draw(sprite_pos,CRT,cycle)
-
 
                     sprite_pos+=int(x)
 
-        print("============================")
         self.print_CRT(CRT)
 
 sol = Solution()

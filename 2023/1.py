@@ -1014,17 +1014,46 @@ xtwone3four
 zoneight234
 7pqrstsixteen'''
 
-units = [
+special="thfjtb56c"
+
+numbers = [
 "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
 "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
-"sixteen", "seventeen", "eighteen", "nineteen",
+"sixteen", "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
 ]
 
-tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+number_dict = {
+    "zero": 0, 
+    "one": 1, 
+    "two": 2, 
+    "three": 3, 
+    "four": 4, 
+    "five": 5, 
+    "six": 6, 
+    "seven": 7, 
+    "eight": 8,
+    "nine": 9, 
+    "ten": 10, 
+    "eleven": 11, 
+    "twelve": 12, 
+    "thirteen": 13, 
+    "fourteen": 14, 
+    "fifteen": 15,
+    "sixteen": 16, 
+    "seventeen": 17, 
+    "eighteen": 18, 
+    "nineteen": 19, 
+    "twenty": 20, 
+    "thirty": 30, 
+    "forty": 40, 
+    "fifty": 50, 
+    "sixty": 60, 
+    "seventy": 70, 
+    "eighty": 80, 
+    "ninety": 90
+}
 
-scales = ["hundred", "thousand", "million", "billion", "trillion"]
-
-def main(txt):
+def one(txt):
     total = 0
 
     for line in txt.split('\n'):
@@ -1042,4 +1071,43 @@ def main(txt):
 
     print("TOTAL:", total)
 
-main(input)
+def two(txt):
+    total = 0
+
+    for line in txt.split('\n'):
+        print(line)
+        length = len(line)
+        start = 0
+        end = length-1
+
+        first = line[start]
+        last = line[end]
+
+        while (start <= end and (first.isdigit() is False or last.isdigit() is False)):
+            # print(start, end, first, last)
+            if (first.isdigit() is False):
+                for number in numbers:
+                    if len(number) <= start+1 and number in line[:start+1]:
+                        first = str(number_dict[number])
+                        break
+                
+                if (first.isdigit() is False):
+                    start+=1
+                    first = line[start]
+            
+            if (last.isdigit() is False):
+                for number in numbers:
+                    if len(number) <= length-end and number in line[end:]:
+                        last = str(number_dict[number])
+                        break
+                if (last.isdigit() is False):
+                    end-=1
+                    last = line[end]
+
+        print(first[0], last[-1])        
+
+        total+=int(first[0]+last[-1])
+
+    print("TOTAL:", total)
+
+two(input)

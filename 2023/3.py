@@ -150,6 +150,12 @@ input1 = '''467..114..
 ...$.*....
 .664.598..'''
 
+input2 = '''617*...*..
+........55
+1*1..+.58.'''
+
+symbols = ['*','@','!','#','%','^','&','(',')','-','=','+','_','{','}','[',']',':',';',',','|','?','<','>','/','$']
+all_symbols = ['.','*','@','!','#','%','^','&','(',')','-','=','+','_','{','}','[',']',':',';',',','|','?','<','>','/','$']
 
 def one(txt):
     numbers = []
@@ -162,60 +168,39 @@ def one(txt):
         if i != len(lines)-1:
             print("AFTER :", lines[i+1])
 
-        num = ""
         start = -1
         end = -1
 
         for j in range(len(lines[i])):
-            if lines[i][j] == "." and start != -1 and end != -1:
+            if j == len(lines[i])-1 and lines[i][j].isdigit():
+                end = j
+                       
+            if (any(symbol in lines[i][j] for symbol in all_symbols) and start != -1 and end != -1) or (j == len(lines[i])-1 and start != -1 and end != -1):
                 # check adjacent
                 adj_start_i = 0 if start == 0 else start-1
                 adj_end_i = -1 if end == len(lines[i])-1 else end+2
 
-                length = end-start+2 if start==0 or end == len(lines[i])-1 else end-start+3
-
+                check_before = any(symbol in lines[i-1][adj_start_i:adj_end_i] for symbol in symbols)
+                check_current = any(symbol in lines[i][adj_start_i:adj_end_i] for symbol in symbols)
+                check_after = any(symbol in lines[i+1 if i < len(lines)-1 else -1][adj_start_i:adj_end_i] for symbol in symbols)
+                
                 if i == 0:
-                    if lines[i+1][adj_start_i:adj_end_i] != '.'*length:
+                    if check_after or check_current:
                         print(start, end, adj_start_i, adj_end_i, lines[i+1][adj_start_i:adj_end_i], lines[i][start:end+1])
                         number = int(lines[i][start:end+1])
                         numbers.append(number)
-                    elif start != 0 and lines[i][start-1] != '.':
-                        print(start, end, adj_start_i, adj_end_i, lines[i][start-1], lines[i][start:end+1])
-                        number = int(lines[i][start:end+1])
-                        numbers.append(number)
-                    elif end != len(lines[i])-1 and lines[i][end+1] != '.':
-                        print(start, end, adj_start_i, adj_end_i, lines[i][end+1], lines[i][start:end+1])
-                        number = int(lines[i][start:end+1])
-                        numbers.append(number)
                 elif i == len(lines)-1:
-                    if lines[i-1][adj_start_i:adj_end_i] != '.'*length:
-                        print(start, end, adj_start_i, adj_end_i, lines[i-1][adj_start_i:adj_end_i], lines[i][start:end+1])
-                        number = int(lines[i][start:end+1])
-                        numbers.append(number)
-                    elif start != 0 and lines[i][start-1] != '.':
-                        print(start, end, adj_start_i, adj_end_i, lines[i][start-1], lines[i][start:end+1])
-                        number = int(lines[i][start:end+1])
-                        numbers.append(number)
-                    elif end != len(lines[i])-1 and lines[i][end+1] != '.':
-                        print(start, end, adj_start_i, adj_end_i, lines[i][end+1], lines[i][start:end+1])
+                    if check_before or check_current:
+                        print(start, end, adj_start_i, adj_end_i, lines[i-1][adj_start_i:adj_end_i], lines[i][adj_start_i:adj_end_i], lines[i][start:end+1])
                         number = int(lines[i][start:end+1])
                         numbers.append(number)
                 else:
-                    if lines[i+1][adj_start_i:adj_end_i] != '.'*length or lines[i-1][adj_start_i:adj_end_i] != '.'*length:
+                    if check_current or check_before or check_after:
                         print(start, end, adj_start_i, adj_end_i, lines[i-1][adj_start_i:adj_end_i], lines[i+1][adj_start_i:adj_end_i], lines[i][start:end+1])
-                        number = int(lines[i][start:end+1])
-                        numbers.append(number)
-                    elif start != 0 and lines[i][start-1] != '.':
-                        print(start, end, adj_start_i, adj_end_i, lines[i][start-1], lines[i][start:end+1])
-                        number = int(lines[i][start:end+1])
-                        numbers.append(number)
-                    elif end != len(lines[i])-1 and lines[i][end+1] != '.':
-                        print(start, end, adj_start_i, adj_end_i, lines[i][end+1], lines[i][start:end+1])
                         number = int(lines[i][start:end+1])
                         numbers.append(number)
 
                 # reset
-                num = ""
                 start = -1
                 end = -1
             else:
@@ -225,8 +210,69 @@ def one(txt):
                         end = j 
                     else:
                         end = j
-                    num+=lines[i][j]
-    # print(numbers)
+
+        print("======================")
+    print(numbers)
     print(sum(numbers))
 
-one(input1)
+
+def two(txt):
+    numbers = []
+    lines = txt.split("\n")
+
+    for i in range(len(lines)):
+        if i !=0:
+            print("BEFORE:", lines[i-1])
+        print("LINE  :",lines[i])
+        if i != len(lines)-1:
+            print("AFTER :", lines[i+1])
+
+        start = -1
+        end = -1
+
+        for j in range(len(lines[i])):
+            if j == len(lines[i])-1 and lines[i][j].isdigit():
+                end = j
+                       
+            if (lines[i][j] == '*' and start != -1 and end != -1) or (j == len(lines[i])-1 and start != -1 and end != -1):
+                # check adjacent
+                adj_start_i = 0 if start == 0 else start-1
+                adj_end_i = -1 if end == len(lines[i])-1 else end+2
+
+                check_before = any(symbol in lines[i-1][adj_start_i:adj_end_i] for symbol in ratio_symbols)
+                check_current = any(symbol in lines[i][adj_start_i:adj_end_i] for symbol in ratio_symbols)
+                check_after = any(symbol in lines[i+1 if i < len(lines)-1 else -1][adj_start_i:adj_end_i] for symbol in ratio_symbols)
+                
+                if i == 0:
+                    if check_after or check_current:
+                        print(start, end, adj_start_i, adj_end_i, lines[i+1][adj_start_i:adj_end_i], lines[i][start:end+1])
+                        number = int(lines[i][start:end+1])
+                        numbers.append(number)
+                elif i == len(lines)-1:
+                    if check_before or check_current:
+                        print(start, end, adj_start_i, adj_end_i, lines[i-1][adj_start_i:adj_end_i], lines[i][adj_start_i:adj_end_i], lines[i][start:end+1])
+                        number = int(lines[i][start:end+1])
+                        numbers.append(number)
+                else:
+                    if check_current or check_before or check_after:
+                        print(start, end, adj_start_i, adj_end_i, lines[i-1][adj_start_i:adj_end_i], lines[i+1][adj_start_i:adj_end_i], lines[i][start:end+1])
+                        number = int(lines[i][start:end+1])
+                        numbers.append(number)
+
+                # reset
+                start = -1
+                end = -1
+            else:
+                if lines[i][j].isdigit():
+                    if start == -1 and end == -1:
+                        start = j
+                        end = j 
+                    else:
+                        end = j
+
+        print("======================")
+    print(numbers)
+    print(sum(numbers))
+
+
+one(input)

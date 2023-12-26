@@ -146,10 +146,20 @@ input1 = '''467..114..
 617*......
 .....+.58.
 ..592.....
-......755.
+......7550
 ...$.*....
 .664.598..'''
 
+input2 = '''467..114..
+...*......
+..35..633.
+......#...
+..7*1.....
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..'''
 
 def one(txt):
     numbers = []
@@ -229,4 +239,73 @@ def one(txt):
     # print(numbers)
     print(sum(numbers))
 
-one(input1)
+import re
+import math
+
+
+def get_num(string,index):
+    left = ""
+    left_i = index-1
+    while left_i >=0 and string[left_i].isdigit():
+        left+=string[left_i]
+        left_i-=1
+    
+    right = ""
+    right_i = index+1
+
+    while right_i <= len(string)-1 and string[right_i].isdigit():
+        right+=string[right_i]
+        right_i+=1
+
+    return left[::-1]+string[index]+right
+
+def two(txt):
+    numbers = []
+    lines = txt.split("\n")
+
+    for i in range(len(lines)):
+        for j in range(len(lines[i])):
+            to_product = []
+            
+            if lines[i][j] == "*":
+                # check current line
+                if lines[i][j-1].isdigit():
+                    curr_left_num = get_num(lines[i], j-1)  
+                    to_product.append(int(curr_left_num))
+                if lines[i][j+1].isdigit():
+                    curr_right_num = get_num(lines[i], j+1)  
+                    to_product.append(int(curr_right_num))
+                
+                # check line before
+                if i > 0:
+                    if lines[i-1][j].isdigit():
+                        up_num = get_num(lines[i-1], j)  
+                        to_product.append(int(up_num))
+                    else:
+                        if lines[i-1][j-1].isdigit():
+                            up_left_num = get_num(lines[i-1], j-1)
+                            to_product.append(int(up_left_num))
+                        if lines[i-1][j+1].isdigit():
+                            up_right_num = get_num(lines[i-1], j+1)
+                            to_product.append(int(up_right_num))
+
+                # check line after
+                if i < len(lines)-1:
+                    if lines[i+1][j].isdigit():
+                        down_num = get_num(lines[i+1], j)  
+                        to_product.append(int(down_num))
+                    else:
+                        if lines[i+1][j-1].isdigit():
+                            down_left_num = get_num(lines[i+1], j-1)
+                            to_product.append(int(down_left_num))
+                        if lines[i+1][j+1].isdigit():
+                            down_right_num = get_num(lines[i+1], j+1)  
+                            to_product.append(int(down_right_num))                    
+            
+            if len(to_product) == 2:
+                print(to_product, math.prod(to_product))
+                numbers.append(math.prod(to_product))
+
+    print(numbers, sum(numbers))
+
+two(input)

@@ -1135,11 +1135,21 @@ card_to_value2 = {
     'J': 1
 }
 
-# 1,4     2222Q 2: 4  Q: 1
-# 2,3     Q33QQ Q: 3  3: 2
-# 1,1,3   AAA23 A: 3  2: 1    3: 1
-# 1,2,2   A99AJ A: 2  9: 2    J: 1
-# 1,1,1,2 A92AJ A: 2  9: 1    2: 1    J: 1
+# # 1,4     2222Q 2: 4  Q: 1
+# # 2,3     Q33QQ Q: 3  3: 2
+# # 1,1,3   AAA23 A: 3  2: 1    3: 1
+# # 1,2,2   A99AJ A: 2  9: 2    J: 1
+# # 1,1,1,2 A92AJ A: 2  9: 1    2: 1    J: 1
+# 1,1,1,1 1   2345 J one pair
+# 1,1,2 1     2245 J two pair
+# 1,3 1       2225 J four of a kind
+# 4 1         2222 J five of a kind
+
+# 1,1,1 2     234 JJ 
+# 1,2 2       224 JJ
+# 3 2         222 JJ
+# 1,1 3       12 JJJ
+
 
 def check_hand2(hand):
     hand_dict = {}
@@ -1154,11 +1164,41 @@ def check_hand2(hand):
     if len(hand_dict) == 1:
         return 1
     
-    if len(hand_dict) == 5:
-        return 7
+    if "J" not in hand_dict:
+        if len(hand_dict) == 5:
+            return 7
 
-    # print(sorted(hand_dict.values()))
+        match sorted(hand_dict.values()):
+            case [1,4]:
+                return 2
+            case [2,3]:
+                return 3
+            case [1,1,3]:
+                return 4
+            case [1,2,2]:
+                return 5
+            case [1,1,1,2]:
+                return 6
+    
+    # print("detected J", hand_dict)
+
+    j_val = hand_dict["J"]
+    hand_dict.pop("J", None)
+    
+    max_key = None
+    max_val = None
+    for key, val in hand_dict.items():
+        if max_key == None or val > max_val:
+            max_key = key
+            max_val = val
+    
+    # print(max_key)
+    hand_dict[max_key]+=j_val                               
+    
+    # print("NEWWW",hand, hand_dict)    
     match sorted(hand_dict.values()):
+        case [5]:
+            return 1
         case [1,4]:
             return 2
         case [2,3]:
@@ -1169,6 +1209,8 @@ def check_hand2(hand):
             return 5
         case [1,1,1,2]:
             return 6
+    
+    
      
 
 def compare_same_type2(first, second):
@@ -1193,22 +1235,23 @@ def two(dict):
     ]
 
     for hand,bid in dict.items():
-        order[check_hand(hand)-1].append(hand)
+        # print(hand, check_hand2(hand))
+        order[check_hand2(hand)-1].append(hand)
 
     output = []
     for group in order:
-        sort = sorted(group, key=cmp_to_key(compare_same_type))
+        sort = sorted(group, key=cmp_to_key(compare_same_type2))
         sort.reverse()
         output+=sort
     
     output.reverse()
     total = 0
-    # print(output)
     for i in range(len(output)):
+        # print(output[i])
         # print(output[i],(i+1)*dict[output[i]]) 
         total+=(i+1)*dict[output[i]]
 
     # print(output)
     print(total)
 
-two(input1)
+two(input)

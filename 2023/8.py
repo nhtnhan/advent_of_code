@@ -792,4 +792,33 @@ def one(direction, input_dict):
     
     print(step)
 
+def two(direction, input_dict):
+    step = 0
+    current_1 = 'GSA'
+    current_2 = 'DLA'
+    current_3 = 'MLA'
+    current_4 = 'MQA'
+    current_5 = 'AAA'
+    current_6 = 'JGA'
+    direction_i = 0
+    
+    while current_1[-1] != 'Z' or current_2[-1] != 'Z' or current_3[-1] != 'Z' or current_4[-1] != 'Z' or current_5[-1] != 'Z' or current_6[-1] != 'Z':
+        print(current_1, current_2, current_3, current_4, current_5, current_6)
+        left_or_right_i = direction_to_index[direction[direction_i]]
+        current_1 = input_dict[current_1][left_or_right_i]
+        current_2 = input_dict[current_2][left_or_right_i]
+        current_3 = input_dict[current_3][left_or_right_i]
+        current_4 = input_dict[current_4][left_or_right_i]
+        current_5 = input_dict[current_5][left_or_right_i]
+        current_6 = input_dict[current_6][left_or_right_i]
+
         
+        step+=1
+        if direction_i + 1 == len(direction):
+            direction_i = 0
+        else:
+            direction_i+=1
+
+    print(step)
+
+two(d,i)

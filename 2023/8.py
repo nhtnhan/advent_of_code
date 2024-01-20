@@ -803,7 +803,6 @@ def two(direction, input_dict):
     direction_i = 0
     
     while current_1[-1] != 'Z' or current_2[-1] != 'Z' or current_3[-1] != 'Z' or current_4[-1] != 'Z' or current_5[-1] != 'Z' or current_6[-1] != 'Z':
-        print(current_1, current_2, current_3, current_4, current_5, current_6)
         left_or_right_i = direction_to_index[direction[direction_i]]
         current_1 = input_dict[current_1][left_or_right_i]
         current_2 = input_dict[current_2][left_or_right_i]
@@ -818,7 +817,25 @@ def two(direction, input_dict):
             direction_i = 0
         else:
             direction_i+=1
+        
+        print(current_1, current_2, current_3, current_4, current_5, current_6)
+
+        # 12599 current_3
+        # 13771 current_5
+        # 19631 current_1
+        # 17287 current_2
+        # 23147 current_4
+        # 20803 current_6
+        # if step == 13771*3:
+        #     break
+        
+        
+
+        if 'Z' in current_1 or 'Z' in current_2 or 'Z' in current_3 or 'Z' in current_4 or 'Z' in current_5 or 'Z' in current_6:
+            print("HERE",current_1, current_2, current_3, current_4, current_5, current_6)
+            break
 
     print(step)
 
-two(d,i)
+two(d3,i)
+# find manually by getting LCM of those 6 numbers: 13129439557681

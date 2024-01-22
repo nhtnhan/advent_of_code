@@ -203,7 +203,7 @@ input1='''0 3 6 9 12 15
 1 3 6 10 15 21
 10 13 16 21 30 45'''
 
-def extrapolate(array):
+def extrapolate_forward(array):
     if all(num == 0 for num in array):
         return array[-1]
     else:
@@ -212,9 +212,19 @@ def extrapolate(array):
             diff = array[i+1] - array[i]
             seq.append(diff)
 
-        return seq[-1] + extrapolate(seq)
+        return seq[-1] + extrapolate_forward(seq)
         
-            
+def extrapolate_backward(array):
+    if all(num == 0 for num in array):
+        return 0
+    else:
+        seq = []
+        for i in range(0,len(array)-1):
+            diff = array[i+1] - array[i]
+            seq.append(diff)
+
+        return seq[0] - extrapolate_backward(seq)
+
 def one(txt):
     lines = txt.split("\n")
     
@@ -223,9 +233,21 @@ def one(txt):
         nums = line.split(" ")
         nums = [int(num) for num in nums]
         
-        output += nums[-1]+extrapolate(nums)
+        output += nums[-1]+extrapolate_forward(nums)
     
     print(output)
 
-one(input)    
+def two(txt):
+    lines = txt.split("\n")
+    
+    output = 0
+    for line in lines:
+        nums = line.split(" ")
+        nums = [int(num) for num in nums]
+        
+        output += nums[0] - extrapolate_backward(nums)
+    
+    print(output)
+
+two(input)    
 

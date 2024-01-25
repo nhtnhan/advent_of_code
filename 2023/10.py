@@ -154,10 +154,11 @@ LJ.LJ'''
 pipe_to_direction = {
     "|": [[1,0],[-1,0]],
     "-": [[0,1],[0,-1]],
-    "L": [[1,0],[0,1]],
-    "J": [[1,0],[0,-1]],
-    "7": [[-1,0],[0,-1]],
-    "F": [[-1,0],[0,1]],
+    "L": [[-1,0],[0,1]],
+    "J": [[-1,0],[0,-1]],
+    "7": [[1,0],[0,-1]],
+    "F": [[1,0],[0,1]],
+    ".": [[100,100],[100,100]] # padded so that it does not add up to any index in array
 }
 
 def one(txt):
@@ -179,43 +180,156 @@ def one(txt):
         pipe_loc = [s_loc[0]-1, s_loc[1]]
         
         for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
-            
-            # 
-            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:                
                 if len(first_loc) == 0:
                     first_loc = pipe_loc
                 else:
                     second_loc = pipe_loc
     
-    # if s_loc[0] < len(paths) - 1:
-    #     pipe_loc = [s_loc[0]+1, s_loc[1]]
+    if s_loc[0] < len(paths) - 1:
+        pipe_loc = [s_loc[0]+1, s_loc[1]]
         
-    #     for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
-    #         if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
-    #             if len(first_loc) == 0:
-    #                 first_loc = pipe_loc
-    #             else:
-    #                 second_loc = pipe_loc
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
 
-    # if s_loc[1] > 0:
-    #     pipe_loc = [s_loc[0], s_loc[1]-1]
+    if s_loc[1] > 0:
+        pipe_loc = [s_loc[0], s_loc[1]-1]
         
-    #     for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
-    #         if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
-    #             if len(first_loc) == 0:
-    #                 first_loc = pipe_loc
-    #             else:
-    #                 second_loc = pipe_loc
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
 
-    # if s_loc[1] < len(paths) - 1:
-    #     pipe_loc = [s_loc[0], s_loc[1]+1]
+    if s_loc[1] < len(paths) - 1:
+        pipe_loc = [s_loc[0], s_loc[1]+1]
         
-    #     for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
-    #         if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
-    #             if len(first_loc) == 0:
-    #                 first_loc = pipe_loc
-    #             else:
-    #                 second_loc = pipe_loc
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
 
-    print(first_loc, second_loc)
-one(input1)
+    # traverse and split half
+    current = [first_loc[0],first_loc[1]]
+    previous = [s_loc[0],s_loc[1]]
+    steps = 1
+        
+    while paths[current[0]][current[1]] != "S":
+        print(previous, paths[previous[0]][previous[1]], current, paths[current[0]][current[1]])
+        for row_change,col_change in pipe_to_direction[paths[current[0]][current[1]]]:
+            if current[0] + row_change != previous[0] or current[1] + col_change != previous[1]:
+                previous = [current[0], current[1]]
+                current = [previous[0] + row_change, previous[1] + col_change]
+                steps+=1
+                break
+
+    print(steps/2)
+
+# ray casting algo
+def two(txt):
+    paths = [[char for char in line] for line in txt.split("\n")]
+    path_dict = {} # 3 is pipe, 2 is unknown and S, 1 is inside, 0 is outside
+    
+    
+    # find s
+    s_loc = [] # [row, col]
+    for row in range(len(paths)):
+        for col in range(len(paths[row])):
+            if paths[row][col] == "S":
+                s_loc.append(row)
+                s_loc.append(col)
+                path_dict[f'{row}:{col}'] = 3
+            else:
+                path_dict[f'{row}:{col}'] = 2
+
+    # find two valid pipes connecting to x
+    first_loc = []
+    second_loc = []
+    
+    if s_loc[0] > 0:
+        pipe_loc = [s_loc[0]-1, s_loc[1]]
+        
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:                
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
+    
+    if s_loc[0] < len(paths) - 1:
+        pipe_loc = [s_loc[0]+1, s_loc[1]]
+        
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
+
+    if s_loc[1] > 0:
+        pipe_loc = [s_loc[0], s_loc[1]-1]
+        
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
+
+    if s_loc[1] < len(paths) - 1:
+        pipe_loc = [s_loc[0], s_loc[1]+1]
+        
+        for row_change,col_change in pipe_to_direction[paths[pipe_loc[0]][pipe_loc[1]]]:
+            if pipe_loc[0] + row_change == s_loc[0] and pipe_loc[1] + col_change == s_loc[1]:
+                if len(first_loc) == 0:
+                    first_loc = pipe_loc
+                else:
+                    second_loc = pipe_loc
+
+    # traverse and mark location of pipe
+    current = [first_loc[0],first_loc[1]]
+    previous = [s_loc[0],s_loc[1]]
+    
+    while paths[current[0]][current[1]] != "S":
+        for row_change,col_change in pipe_to_direction[paths[current[0]][current[1]]]:
+            if current[0] + row_change != previous[0] or current[1] + col_change != previous[1]:
+                path_dict[f'{current[0]}:{current[1]}']=3
+                path_dict[f'{previous[0]}:{previous[1]}']=3
+                
+                previous = [current[0], current[1]]
+                current = [previous[0] + row_change, previous[1] + col_change]
+                break
+
+    # iterate over all points, run ray casting algo to identify inside or outside:
+    for key, val in path_dict.items():
+        if val == 2:
+            row,col = key.split(":")
+            row = int(row)
+            col = int(col)
+            intersect_count = 0
+
+            left_or_right = 0 # 0: left & 1: right
+            # determine horizontal line starting from the point to furthest left or right
+            if col == 0:
+                left_or_right = 1
+            
+            if left_or_right == 0:
+                for index in range(col):
+                    break # get all the point and see if it is pipe
+            else:
+                for index in range(col, len(paths)):
+                    break # get all the point and see if it is pipe
+            
+            if intersect_count%2:
+                path_dict[key] = 0
+            else:
+                path_dict[key] = 1
+    
+two(input1)

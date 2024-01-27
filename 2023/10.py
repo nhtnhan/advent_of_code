@@ -151,6 +151,39 @@ SJLL7
 |F--J
 LJ.LJ'''
 
+input3='''...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........'''
+
+input4='''.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...'''
+
+input5='''FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L'''
+
+
 pipe_to_direction = {
     "|": [[1,0],[-1,0]],
     "-": [[0,1],[0,-1]],
@@ -232,7 +265,56 @@ def one(txt):
 
     print(steps/2)
 
-# ray casting algo
+# first/second is: [[x1,y1],[x2,y2]]
+def checkIntersect(first, second):
+    is_first_horizontal = True
+    first_start, first_end = first
+    first_start_row, first_start_col =  first_start
+    first_end_row, first_end_col = first_end
+
+    if first_start_row == first_end_row:
+        is_first_horizontal = False
+    
+    is_second_horizontal = True
+    second_start, second_end = second
+    second_start_row, second_start_col =  second_start
+    second_end_row, second_end_col = second_end
+
+    if second_start_row == second_end_row:
+        is_second_horizontal = False
+
+    # both vertical 
+    if not is_first_horizontal and not is_second_horizontal:
+        for point in first:
+            point_row, point_col = point
+            if min(second_start_row, second_end_row) <= point_row <= max(second_start_row, second_end_row):
+                return True
+        
+
+
+    #  both horizontal
+    if is_first_horizontal and is_second_horizontal:
+        for point in first:
+            point_row, point_col = point
+            if min(second_start_col, second_end_col) <= point_col <= max(second_start_col, second_end_col):
+                return True
+    
+    # one horizontal, one vertical
+    return s_intersect(first_start, first_end, second_start, second_end)    
+
+
+# stackoverflow
+def s_ccw(A,B,C):
+    a_y, a_x = A
+    b_y, b_x = B 
+    c_y, c_x = C
+    
+    return (c_y-a_y) * (b_x-a_x) > (b_y-a_y) * (c_x-a_x)
+
+# Return true if line segments AB and CD intersect
+def s_intersect(A,B,C,D):
+    return s_ccw(A,C,D) != s_ccw(B,C,D) and s_ccw(A,B,C) != s_ccw(A,B,D)
+
 def two(txt):
     paths = [[char for char in line] for line in txt.split("\n")]
     path_dict = {} # 3 is pipe, 2 is unknown and S, 1 is inside, 0 is outside
@@ -293,19 +375,35 @@ def two(txt):
                 else:
                     second_loc = pipe_loc
 
-    # traverse and mark location of pipe
+    # traverse, mark location of pipe, and get all edges
     current = [first_loc[0],first_loc[1]]
     previous = [s_loc[0],s_loc[1]]
-    
+    edges = []
+    edge = []
+    started = True
+
+    edge.append(previous)
     while paths[current[0]][current[1]] != "S":
+        
         for row_change,col_change in pipe_to_direction[paths[current[0]][current[1]]]:
             if current[0] + row_change != previous[0] or current[1] + col_change != previous[1]:
                 path_dict[f'{current[0]}:{current[1]}']=3
                 path_dict[f'{previous[0]}:{previous[1]}']=3
-                
+
+                # detect edges using pairs of F7, LJ, L7, FJ, S7, SJ, FS, LS
+                if len(edge) == 1 and paths[current[0]][current[1]] in ["F","7","L","J"]:
+                    edge.append(current)
+                    edges.append(edge)
+                    edge = [current]
+
                 previous = [current[0], current[1]]
                 current = [previous[0] + row_change, previous[1] + col_change]
                 break
+
+    edge.append([s_loc[0],s_loc[1]])    
+    edges.append(edge)
+
+    inner_count = 0
 
     # iterate over all points, run ray casting algo to identify inside or outside:
     for key, val in path_dict.items():
@@ -315,21 +413,22 @@ def two(txt):
             col = int(col)
             intersect_count = 0
 
-            left_or_right = 0 # 0: left & 1: right
-            # determine horizontal line starting from the point to furthest left or right
+            end = [row,0]
             if col == 0:
-                left_or_right = 1
+                end[-1] = len(paths[0])
             
-            if left_or_right == 0:
-                for index in range(col):
-                    break # get all the point and see if it is pipe
-            else:
-                for index in range(col, len(paths)):
-                    break # get all the point and see if it is pipe
-            
-            if intersect_count%2:
+            # check intersection of [row,col]-end & all edges of pipes
+            for e in edges:
+                intersected = checkIntersect([[row,col],end], e)
+                if intersected:
+                    intersect_count+=1  
+
+            if intersect_count%2 == 0:
                 path_dict[key] = 0
             else:
+                print(key, intersect_count)
                 path_dict[key] = 1
+                inner_count+=1
     
-two(input1)
+    print(inner_count)    
+two(input3)

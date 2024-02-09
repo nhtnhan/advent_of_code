@@ -265,42 +265,115 @@ def one(txt):
 
     print(steps/2)
 
+from queue import Queue
+
+def main(txt):    
+    m = [[char for char in line] for line in txt.split("\n")]
+
+    n = {
+        "|": [ ( 0,-1), ( 0, 1) ],
+        "-": [ (-1, 0), ( 1, 0) ],
+        "L": [ ( 0,-1), ( 1, 0) ],
+        "J": [ ( 0,-1), (-1, 0) ],
+        "7": [ (-1, 0), ( 0, 1) ],
+        "F": [ ( 1, 0), ( 0, 1) ],
+    }
+
+    x,y = None, None
+
+    # find S
+    for yi,line in enumerate(m):
+        for xi,c in enumerate(line):
+            if c == "S":
+                x,y = xi,yi
+                break
+
+    assert(x != None)
+    assert(y != None)
+
+    q = Queue()
+    
+    # find two adjacent pipes to S 
+    for dx,dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+        c = m[y+dy][x+dx]
+        if c in n:
+            for dx2,dy2 in n[c]:
+                if x == x+dx+dx2 and y == y+dy+dy2:
+                    q.put((1,(x+dx,y+dy)))
+
+    dists = { (x,y): 0 }
+    assert(q.qsize() == 2)
+
+    # dfs on each side (discarding duplicate)
+    while not q.empty():
+        d,(x,y) = q.get()
+
+        if (x,y) in dists:
+            continue
+
+        #print(d,(x,y))
+        dists[(x,y)] = d
+
+        for dx,dy in n[m[y][x]]:
+            q.put((d+1,(x+dx,y+dy)))
+    
+    print(f"Part 1: {max(dists.values())}")
+    
+    # run even odd rule between diagonal line from each none-pipe tile and 
+    # https://www.reddit.com/r/adventofcode/comments/18evyu9/comment/kcsupst/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+    # explain: https://www.reddit.com/r/adventofcode/comments/18evyu9/comment/kcqwtui/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+    inside = 0
+    for y, line in enumerate(m):
+        for x, char in enumerate(line):
+            if (x,y) in dists:
+                continue
+            
+            count = 0
+            lx, ly = x,y
+            while lx!=len(m[0]) and ly!=len(m):
+                if (lx,ly) in dists and m[ly][lx] != "F"and m[ly][lx] != "J":
+                    count+=1
+                ly+=1
+                lx+=1
+                        
+            if count % 2 != 0:
+                inside+=1
+            
+    print(f"Part 2: {inside}")
+    
+    
+main(input)
+
 # first/second is: [[x1,y1],[x2,y2]]
-def checkIntersect(first, second):
+def checkIntersect(first, second, max_row, max_col):
+    # euclidian formula to get line that is not parallel or coincident to the second line
+    # denominator cannot be zero: (x1-x2)(y3-y4)-(y1-y2)(x3-x4)    
     is_first_horizontal = True
     first_start, first_end = first
     first_start_row, first_start_col =  first_start
-    first_end_row, first_end_col = first_end
 
-    if first_start_row == first_end_row:
-        is_first_horizontal = False
-    
     is_second_horizontal = True
     second_start, second_end = second
     second_start_row, second_start_col =  second_start
     second_end_row, second_end_col = second_end
 
-    if second_start_row == second_end_row:
-        is_second_horizontal = False
 
-    # both vertical 
-    if not is_first_horizontal and not is_second_horizontal:
-        for point in first:
-            point_row, point_col = point
-            if min(second_start_row, second_end_row) <= point_row <= max(second_start_row, second_end_row):
-                return True
-        
-
-
-    #  both horizontal
-    if is_first_horizontal and is_second_horizontal:
-        for point in first:
-            point_row, point_col = point
-            if min(second_start_col, second_end_col) <= point_col <= max(second_start_col, second_end_col):
-                return True
+    # if horizontal line parallel or coincident, do vertical line
+    end = [first_start_row,0]
+    if first_start_col == 0:
+        end[-1] = max_col 
+               
+    check_horizontal = (end[0]-first_start_row)*(second_end_col-second_start_col)-(end[-1]-first_start_col)*(second_end_row-second_start_row)
+    if check_horizontal == 0:
+        end = [0,first_start_col]
+        if first_start_row == 0:
+            end[0] = max_row 
     
     # one horizontal, one vertical
-    return s_intersect(first_start, first_end, second_start, second_end)    
+    intersected = s_intersect(first_start, end, second_start, second_end)
+    if (first_start == [6,3]):
+        print(first_start, end, second_start, second_end, intersected)
+    return intersected    
 
 
 # stackoverflow
@@ -412,23 +485,20 @@ def two(txt):
             row = int(row)
             col = int(col)
             intersect_count = 0
-
-            end = [row,0]
-            if col == 0:
-                end[-1] = len(paths[0])
             
             # check intersection of [row,col]-end & all edges of pipes
             for e in edges:
-                intersected = checkIntersect([[row,col],end], e)
+                intersected = checkIntersect([[row,col],[]], e, len(paths), len(paths[0]))
                 if intersected:
                     intersect_count+=1  
+
+            print(key, intersect_count)
 
             if intersect_count%2 == 0:
                 path_dict[key] = 0
             else:
-                print(key, intersect_count)
+
                 path_dict[key] = 1
                 inner_count+=1
     
     print(inner_count)    
-two(input3)

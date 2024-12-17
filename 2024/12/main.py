@@ -1,6 +1,5 @@
 import sys
 
-
 def dfs(map, i, j, flag, group):
     if map[i][j] != flag:
         return
@@ -33,8 +32,28 @@ def calculate_perimeter_one(coords, map):
                 perimeter+=1
     
     return perimeter        
+
+def calculate_perimeter_two(coords, map):
+    if len(coords) == 1:
+        return 4
+    if len(coords) == 2:
+        return 6
+    if len(coords) == 3:
+        return 8
     
+    perimeter = 0
+    directions = [(1,0), (-1,0), (0,1), (0,-1)]
+    for i, j in coords:
+        
+        
+        for di, dj in directions:
+            ni, nj = i+di, j+dj
+                        
+            if not(0<=ni<=len(map)-1 and 0<=nj<=len(map[0])-1) or (0<=ni<=len(map)-1 and 0<=nj<=len(map[0])-1 and map[ni][nj] != map[i][j]):
+                perimeter+=1
     
+    return perimeter        
+       
 def main():
     filename = sys.argv[1]
     map = []
@@ -50,7 +69,6 @@ def main():
     '''
     key_to_island_group = {} # key:2d array
     key_to_added = {} # key:set
-
 
     for i in range(len(map)):
         for j in range(len(map[i])):
@@ -76,7 +94,3 @@ def main():
     
 if __name__ == '__main__':
     main()
-    
-
-        
-        

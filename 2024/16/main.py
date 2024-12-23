@@ -55,6 +55,44 @@ def find_pos(letter, map):
             if map[i][j] == letter:
                 return i,j
 
+def trace_path(cell_details, dest):
+    print("The Path is ")
+    path = []
+    row = dest[0]
+    col = dest[1]
+
+    # Trace the path from destination to source using parent cells
+    while not (cell_details[row][col].parent_i == row and cell_details[row][col].parent_j == col):
+        path.append((row, col))
+        temp_row = cell_details[row][col].parent_i
+        temp_col = cell_details[row][col].parent_j
+        row = temp_row
+        col = temp_col
+
+    # Add the source cell to the path
+    path.append((row, col))
+    # Reverse the path to get the path from source to destination
+    path.reverse()
+    
+    return path
+
+def draw_path(maps, pts):
+    for i in range(2, len(pts)):
+        i1, j1 = pts[i-1]
+        i2, j2 = pts[i]
+        
+        if i1 > i2:
+            maps[i1][j1] = '^'
+        elif i1 < i2:
+            maps[i1][j1] = 'v'
+        elif j1 > j2:
+            maps[i1][j1] = '<'
+        else:
+            maps[i1][j1] = '>'
+    
+    for row in maps:
+        print(''.join(row))
+
 class Cell:
     def __init__(self):
         # parent cell's row index
@@ -75,7 +113,6 @@ def cal_h(i,j, dst_i, dst_j):
     return ((i-dst_i)**2 + (j-dst_j)**2)** 0.5
 
 def astar(paths, start_i, start_j, dst_i, dst_j, start_facing):
-    import math
     import heapq
     
     closed_list = [[False for _ in range(len(paths[0]))] for _ in range(len(paths))] # contains visited cell
@@ -111,6 +148,10 @@ def astar(paths, start_i, start_j, dst_i, dst_j, start_facing):
                     n_facing, turn_pts = rotate_with_cost((di, dj), cell_details[i][j].facing)
                     g_new = cell_details[i][j].g + 1.0 + turn_pts
                     found_dst =  True
+                    
+                    pts = trace_path(cell_details,(ni,nj))
+                    draw_path(paths, pts)
+                    
                     return g_new
                 else:
                     n_facing, turn_pts = rotate_with_cost((di, dj), cell_details[i][j].facing)
@@ -131,6 +172,55 @@ def astar(paths, start_i, start_j, dst_i, dst_j, start_facing):
         print("not found")
 
 
+def part1(filename):
+    from heapq import heappop, heappush
+
+    puzzle_input = ''
+
+    with open(filename, 'r') as f:
+            puzzle_input = f.read().strip()
+            
+    grid = puzzle_input.split('\n')
+    m, n = len(grid), len(grid[0])
+    for i in range(m):
+        for j in range(n):
+            if grid[i][j] == 'S':
+                start = (i, j)
+            elif grid[i][j] == 'E':
+                end = (i, j)
+
+    grid[end[0]] = grid[end[0]].replace('E', '.')
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    heap = [(0, 0, *start)]
+    visited = set()
+    
+    while heap:
+        score, d, i, j = heappop(heap)
+        if (i, j) == end:
+            break
+
+        if (d, i, j) in visited:
+            continue
+
+        visited.add((d, i, j))
+        
+        x = i + directions[d][0]
+        y = j + directions[d][1]
+        if grid[x][y] == '.' and (d, x, y) not in visited:
+            heappush(heap, (score + 1, d, x, y))
+        
+        left = (d - 1) % 4
+        if (left, i, j) not in visited:
+            heappush(heap, (score + 1000, left, i, j))
+
+        right = (d + 1) % 4
+        if (right, i, j) not in visited:
+            heappush(heap, (score + 1000, right, i, j))
+
+    print(score) 
+
+
 def main(filename):
     map = parse_input(filename)
     
@@ -149,4 +239,4 @@ def main(filename):
 
 main('one.txt')
 main('two.txt')
-main('input.txt')
+# main('input.txt')
